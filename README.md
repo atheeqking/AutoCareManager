@@ -1,15 +1,15 @@
 # AutoCare Manager
 
-AutoCare Manager is a vehicle service and maintenance management system for a single automobile workshop. This repository currently contains **Phase 1**: independent Spring Boot and React application setup, PostgreSQL configuration, and a basic health API and landing page.
+AutoCare Manager is a vehicle service and maintenance management system for a single automobile workshop. This repository contains Phase 1 setup plus **Phase 2**: the PostgreSQL domain schema, Flyway migration, JPA entities, and repositories.
 
-No authentication, business modules, database entities, or mock business data are implemented in this phase.
+Authentication, workflow business logic, business REST APIs, and frontend business screens are intentionally deferred.
 
 ## Prerequisites
 
 - Java 21 or later (Java 21 is the project baseline)
 - Maven 3.9 or later
 - Node.js 20 or later and npm
-- PostgreSQL 16+ or Docker Desktop (optional for the default local API profile)
+- PostgreSQL 16+ or Docker Desktop
 
 ## Project layout
 
@@ -20,10 +20,15 @@ No authentication, business modules, database entities, or mock business data ar
 
 ## Run the backend
 
-The default `local` profile starts the Phase 1 API without a database because no entities exist yet:
+The default `postgres` profile requires PostgreSQL. Copy the environment template, choose a non-default password before sharing or deploying, and start the database:
 
 ```powershell
+Copy-Item .env.example .env
+docker compose up -d postgres
 cd backend
+$env:DB_URL = "jdbc:postgresql://localhost:5432/autocare_manager"
+$env:DB_USERNAME = "autocare"
+$env:DB_PASSWORD = "change-me"
 mvn spring-boot:run
 ```
 
@@ -42,27 +47,7 @@ Expected response:
 }
 ```
 
-### Run with PostgreSQL
-
-Copy the environment template and set a non-default password before sharing or deploying:
-
-```powershell
-Copy-Item .env.example .env
-docker compose up -d postgres
-```
-
-Then start the backend using its PostgreSQL profile:
-
-```powershell
-cd backend
-$env:SPRING_PROFILES_ACTIVE = "postgres"
-$env:DB_URL = "jdbc:postgresql://localhost:5432/autocare_manager"
-$env:DB_USERNAME = "autocare"
-$env:DB_PASSWORD = "change-me"
-mvn spring-boot:run
-```
-
-The PostgreSQL profile uses `ddl-auto=validate`; Phase 2 will introduce the database entities and migrations/schema.
+Flyway applies migrations from `backend/src/main/resources/db/migration` automatically. PostgreSQL uses `ddl-auto=validate`, so Hibernate validates rather than creates the schema.
 
 ## Run the frontend
 
@@ -94,14 +79,21 @@ npm run build
 ```powershell
 cd backend
 mvn test
+mvn clean verify
 
 cd ../frontend
 npm run build
 ```
 
-## Phase 1 design decisions
+## Database design
+
+See [docs/database.md](docs/database.md) for entity descriptions, relationships, constraints, business IDs, and the migration strategy.
+
+Tests use H2 in PostgreSQL compatibility mode. They run the Flyway migration, validate JPA mappings, and verify repository operations and a unique constraint without requiring a running PostgreSQL server.
+
+## Phase 1 and 2 design decisions
 
 - Backend and frontend are separate applications communicating only over REST/JSON.
 - APIs use the `/api/v1` prefix; the available endpoint is `GET /api/v1/health`.
-- PostgreSQL is configured as an explicit profile to keep the initial health API runnable before Phase 2 entity work.
+- PostgreSQL schema is reproducible from clean databases through Flyway; production-style configurations validate it through Hibernate.
 - Security, Swagger/OpenAPI, authentication, and business workflows are intentionally deferred to their specified phases.
