@@ -1,0 +1,7 @@
+import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+export function HomePlaceholder() {
+  const { logout } = useAuth()
+  return <main className="min-h-screen bg-slate-950 px-5 py-12 text-slate-100"><section className="mx-auto max-w-4xl"><div className="rounded-2xl bg-slate-900 p-8 shadow-2xl"><p className="text-sm font-semibold uppercase tracking-[.16em] text-sky-400">Guest dashboard</p><h1 className="mt-2 text-3xl font-bold">Start your AutoCare profile</h1><p className="mt-3 max-w-2xl text-slate-300">Choose what you would like to add. Creating an account is required before customer or vehicle information can be saved securely.</p><div className="mt-7 grid gap-4 sm:grid-cols-2"><Link to="/register" className="rounded-xl border border-sky-500 bg-slate-800 p-6 transition hover:bg-slate-700"><h2 className="text-xl font-semibold">Add profile</h2><p className="mt-2 text-sm text-slate-300">Create your customer account and enter contact details.</p></Link><Link to="/register" className="rounded-xl border border-sky-500 bg-slate-800 p-6 transition hover:bg-slate-700"><h2 className="text-xl font-semibold">Add vehicle details</h2><p className="mt-2 text-sm text-slate-300">Create an account first, then add one or more vehicles.</p></Link></div><button onClick={logout} className="mt-8 rounded-md bg-slate-700 px-4 py-2 font-medium">Logout</button></div></section></main>
+}

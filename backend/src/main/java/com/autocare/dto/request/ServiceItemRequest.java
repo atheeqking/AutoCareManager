@@ -1,0 +1,1 @@
+package com.autocare.dto.request; import jakarta.validation.constraints.*; public record ServiceItemRequest(@NotBlank @Size(max=150) String name,@Size(max=5000) String description,@NotNull @Positive Integer quantity) {}

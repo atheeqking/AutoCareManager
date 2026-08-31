@@ -12,4 +12,5 @@ public class ServiceIssue {
     @Column(name = "reported_at", nullable = false) private Instant reportedAt;
     @Column(name = "reported_by", length = 100) private String reportedBy;
     protected ServiceIssue() { }
+    public ServiceIssue(ServiceCase serviceCase, String description, String notes, String reporter) { this.serviceCase=serviceCase;issueDescription=description;additionalNotes=notes;reportedAt=Instant.now();reportedBy=reporter; }
 }

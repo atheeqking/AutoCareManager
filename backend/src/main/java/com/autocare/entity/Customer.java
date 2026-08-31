@@ -12,4 +12,10 @@ public class Customer extends AuditableEntity {
     protected Customer() { }
     public Customer(String customerId, String name, String phone) { this.customerId = customerId; this.name = name; this.phone = phone; }
     public String getCustomerId() { return customerId; }
+    public String getName() { return name; }
+    public String getPhone() { return phone; }
+    public String getEmail() { return email; }
+    public User getUser() { return user; }
+    public void update(String name, String phone, String email) { this.name = name; this.phone = phone; this.email = email; }
+    public void assignUser(User user) { this.user = user; }
 }

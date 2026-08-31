@@ -12,5 +12,5 @@ public class Employee extends AuditableEntity {
     @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", unique = true) private User user;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private EmployeeRole role;
     @Column(nullable = false) private boolean active = true;
-    protected Employee() { }
+    protected Employee() { } public String getEmployeeId(){return employeeId;} public String getName(){return name;} public boolean isActive(){return active;}
 }

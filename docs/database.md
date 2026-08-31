@@ -1,6 +1,10 @@
 # Database design
 
+`service_cases` remains the workflow aggregate. Existing `diagnoses`, `service_issues`, and `service_items` tables are reused for Phases 6 and 7; no new table or migration is needed.
+
 Phase 2 stores PostgreSQL schema changes in Flyway. `V1__create_autocare_domain_schema.sql` creates `users`, `customers`, `employees`, `vehicles`, `appointments`, `service_cases`, `service_issues`, `diagnoses`, `service_items`, and `notifications`.
+
+Phase 4 adds `customer_business_id_seq` and `vehicle_business_id_seq` in V3. The application uses them for stable public IDs (`CUS-000001` and `VEH-000001`) independent of internal database primary keys.
 
 Every table uses a generated `BIGINT` primary key. Public-facing identifiers are separate unique business fields: `CUS-*`, `EMP-*`, `VEH-*`, `APT-*`, `SRV-*`, and `NTF-*`. Their generation is deliberately deferred to a later business-service phase, so clients never choose the final identifier.
 

@@ -16,4 +16,13 @@ public class Vehicle extends AuditableEntity {
     protected Vehicle() { }
     public Vehicle(String vehicleId, Customer customer, String make, String model, String color, String licensePlate) { this.vehicleId = vehicleId; this.customer = customer; this.make = make; this.model = model; this.color = color; this.licensePlate = licensePlate; }
     public String getVehicleId() { return vehicleId; }
+    public Customer getCustomer() { return customer; }
+    public String getMake() { return make; }
+    public String getModel() { return model; }
+    public Integer getYear() { return year; }
+    public String getColor() { return color; }
+    public String getLicensePlate() { return licensePlate; }
+    public String getVin() { return vin; }
+    public Long getCurrentMileage() { return currentMileage; }
+    public void update(String make, String model, Integer year, String color, String licensePlate, String vin, Long currentMileage) { this.make = make; this.model = model; this.year = year; this.color = color; this.licensePlate = licensePlate; this.vin = vin; this.currentMileage = currentMileage; }
 }

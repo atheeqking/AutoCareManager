@@ -11,5 +11,5 @@ public class Diagnosis {
     @Column(name = "technician_notes", columnDefinition = "text") private String technicianNotes;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "diagnosed_by_employee_id") private Employee diagnosedBy;
     @Column(name = "diagnosed_at", nullable = false) private Instant diagnosedAt;
-    protected Diagnosis() { }
+    protected Diagnosis() { } public Diagnosis(ServiceCase c,String value,String notes){serviceCase=c;diagnosis=value;technicianNotes=notes;diagnosedAt=Instant.now();} public Long getId(){return id;} public String getDiagnosis(){return diagnosis;} public String getTechnicianNotes(){return technicianNotes;} public void update(String value,String notes){diagnosis=value;technicianNotes=notes;diagnosedAt=Instant.now();}
 }

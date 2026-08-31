@@ -17,4 +17,6 @@ public class Appointment extends AuditableEntity {
     @Enumerated(EnumType.STRING) @Column(length = 10) private Priority priority;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private AppointmentStatus status;
     protected Appointment() { }
+    public Appointment(String id, Customer customer, Vehicle vehicle, LocalDate date, LocalTime time, ServiceType type, String issue, Priority priority) { this.appointmentId=id;this.customer=customer;this.vehicle=vehicle;this.requestedDate=date;this.requestedTime=time;this.serviceType=type;this.issueDescription=issue;this.priority=priority;this.status=AppointmentStatus.REQUESTED; }
+    public String getAppointmentId(){return appointmentId;} public Customer getCustomer(){return customer;} public Vehicle getVehicle(){return vehicle;} public LocalDate getRequestedDate(){return requestedDate;} public LocalTime getRequestedTime(){return requestedTime;} public ServiceType getServiceType(){return serviceType;} public String getIssueDescription(){return issueDescription;} public Priority getPriority(){return priority;} public AppointmentStatus getStatus(){return status;} public void status(AppointmentStatus value){status=value;}
 }
