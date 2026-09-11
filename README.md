@@ -57,6 +57,10 @@ $env:DB_USERNAME = "autocare"
 $env:DB_PASSWORD = "password"
 mvn spring-boot:run
 ```
+### How to test the tables created in the docker postgressql container
+1) In Docker Desktop, go to the Containers tab and click on your PostgreSQL container. Then select EXEc tab and click on open in terminal.
+2) Use the following command to connect to database "psql -U autocare -d autocare_manager"
+2) Then type "\dt" to list the table names and enter the query to see the results "SELECT * FROM appointments;"
 
 ## Optional Google OAuth
 
