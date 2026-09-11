@@ -1,0 +1,1 @@
+package com.autocare.dto.response; import com.autocare.enums.*; import java.time.*; import java.util.*; public record ServiceHistoryResponse(String serviceCaseId,VisitType visitType,ServiceType serviceType,Priority priority,ServiceCaseStatus status,String issue,String diagnosis,String solution,List<ServiceItemResponse> serviceItems,Instant checkInTime,Instant readyForPickupAt) {}
