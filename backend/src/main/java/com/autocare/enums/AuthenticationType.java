@@ -1,2 +1,7 @@
 package com.autocare.enums;
-public enum AuthenticationType { LOCAL, GOOGLE, GUEST }
+
+public enum AuthenticationType {
+    LOCAL,
+    GOOGLE,
+    GUEST
+}

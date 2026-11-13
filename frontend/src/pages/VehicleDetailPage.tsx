@@ -1,1 +1,85 @@
-import{useEffect,useState}from'react';import{Link,useNavigate,useParams}from'react-router-dom';import{customerService}from'../services/customerService';import type{Vehicle}from'../types/domain';export function VehicleDetailPage(){const{vehicleId}=useParams();const navigate=useNavigate();const[v,setV]=useState<Vehicle|null>(null),[h,setH]=useState<any[]>([]),[error,setError]=useState(''),[loading,setLoading]=useState(true);const load=async()=>{if(!vehicleId)return;setLoading(true);setError('');try{const [vehicle,history]=await Promise.all([customerService.vehicle(vehicleId),customerService.history(vehicleId)]);setV(vehicle.data);setH(history.data)}catch{setError('Unable to load vehicle details. Please try again.')}finally{setLoading(false)}};useEffect(()=>{void load()},[vehicleId]);const back=()=>window.history.length>1?navigate(-1):navigate('/workshop/customers');if(loading)return <main className="min-h-screen bg-slate-50 p-8 text-slate-900">Loading vehicle...</main>;if(error)return <main className="min-h-screen bg-slate-50 p-8 text-rose-700">{error}<button onClick={()=>void load()} className="ml-3 rounded border p-2">Retry</button></main>;return <main className="min-h-screen bg-slate-50 p-8 text-slate-900"><section className="mx-auto max-w-3xl rounded-xl bg-white p-7"><button onClick={back} className="text-blue-700">← Back</button><p className="mt-5 text-sm text-blue-700">{v?.vehicleId}</p><h1 className="text-3xl font-bold">{v?.make} {v?.model}</h1><p>{v?.licensePlate} · {v?.color}</p><h2 className="mt-8 text-2xl font-bold">Service History</h2>{h.length===0?<p className="mt-3 text-slate-600">No service history yet. Service records will appear here after this vehicle receives service.</p>:<div className="mt-4 space-y-3">{h.map(x=><Link key={x.serviceCaseId} to={`/workshop/service-cases/${x.serviceCaseId}`} className="block rounded bg-slate-50 p-4 transition hover:bg-slate-100"><b>{x.serviceCaseId}</b><p>{x.status} · {x.serviceType}</p><p>Issue: {x.issue??'N/A'}</p><p>Work: {x.solution??'N/A'}</p><span className="mt-2 block text-sm text-blue-700">Open service case →</span></Link>)}</div>}</section></main>}
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { customerService } from '../services/customerService'
+import type { ServiceHistory, Vehicle } from '../types/domain'
+export function VehicleDetailPage() {
+  const { vehicleId } = useParams()
+  const navigate = useNavigate()
+  const [v, setV] = useState<Vehicle | null>(null),
+    [h, setH] = useState<ServiceHistory[]>([]),
+    [error, setError] = useState(''),
+    [loading, setLoading] = useState(true)
+  const load = async () => {
+    if (!vehicleId) return
+    setLoading(true)
+    setError('')
+    try {
+      const [vehicle, history] = await Promise.all([
+        customerService.vehicle(vehicleId),
+        customerService.history(vehicleId),
+      ])
+      setV(vehicle.data)
+      setH(history.data)
+    } catch {
+      setError('Unable to load vehicle details. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    void load()
+  }, [vehicleId])
+  const back = () => (window.history.length > 1 ? navigate(-1) : navigate('/workshop/customers'))
+  if (loading)
+    return <main className="min-h-screen bg-slate-50 p-8 text-slate-900">Loading vehicle...</main>
+  if (error)
+    return (
+      <main className="min-h-screen bg-slate-50 p-8 text-rose-700">
+        {error}
+        <button onClick={() => void load()} className="ml-3 rounded border p-2">
+          Retry
+        </button>
+      </main>
+    )
+  return (
+    <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+      <section className="mx-auto max-w-3xl rounded-xl bg-white p-7">
+        <button onClick={back} className="text-blue-700">
+          ← Back
+        </button>
+        <p className="mt-5 text-sm text-blue-700">{v?.vehicleId}</p>
+        <h1 className="text-3xl font-bold">
+          {v?.make} {v?.model}
+        </h1>
+        <p>
+          {v?.licensePlate} · {v?.color}
+        </p>
+        <h2 className="mt-8 text-2xl font-bold">Service History</h2>
+        {h.length === 0 ? (
+          <p className="mt-3 text-slate-600">
+            No service history yet. Service records will appear here after this vehicle receives
+            service.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {h.map((x) => (
+              <Link
+                key={x.serviceCaseId}
+                to={`/workshop/service-cases/${x.serviceCaseId}`}
+                className="block rounded bg-slate-50 p-4 transition hover:bg-slate-100"
+              >
+                <b>{x.serviceCaseId}</b>
+                <p>
+                  {x.status} · {x.serviceType}
+                </p>
+                <p>Issue: {x.issue ?? 'N/A'}</p>
+                <p>Work: {x.solution ?? 'N/A'}</p>
+                <span className="mt-2 block text-sm text-blue-700">Open service case →</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  )
+}

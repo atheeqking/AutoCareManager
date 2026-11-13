@@ -1,1 +1,29 @@
-package com.autocare.dto.response; import com.autocare.enums.*; import java.time.*; public record ServiceCaseDetailResponse(String serviceCaseId,String customerId,String customerName,String vehicleId,String vehicle,String licensePlate,VisitType visitType,ServiceType serviceType,Priority priority,ServiceCaseStatus status,String assignedEmployeeId,String assignedEmployeeName,String diagnosis,String solution,String technicianNotes,Instant checkInTime,Instant readyForPickupAt,String startedByUsername,java.math.BigDecimal billingTotal,String billingCurrency,Instant billedAt,Instant paidAt,Instant completedAt) {}
+package com.autocare.dto.response;
+
+import com.autocare.enums.*;
+import java.time.*;
+
+public record ServiceCaseDetailResponse(
+        String serviceCaseId,
+        String customerId,
+        String customerName,
+        String vehicleId,
+        String vehicle,
+        String licensePlate,
+        VisitType visitType,
+        ServiceType serviceType,
+        Priority priority,
+        ServiceCaseStatus status,
+        String assignedEmployeeId,
+        String assignedEmployeeName,
+        String diagnosis,
+        String solution,
+        String technicianNotes,
+        Instant checkInTime,
+        Instant readyForPickupAt,
+        String startedByUsername,
+        java.math.BigDecimal billingTotal,
+        String billingCurrency,
+        Instant billedAt,
+        Instant paidAt,
+        Instant completedAt) {}

@@ -5,11 +5,31 @@ import { AuthProvider } from '../context/AuthContext'
 import { CustomerPortalPage } from './CustomerPortalPage'
 import { customerService } from '../services/customerService'
 
-vi.mock('../services/customerService', () => ({ customerService: { mine: vi.fn(), vehicles: vi.fn() } }))
-beforeEach(() => { vi.clearAllMocks(); localStorage.clear() })
-function setup() { render(<MemoryRouter><AuthProvider><CustomerPortalPage/></AuthProvider></MemoryRouter>) }
+vi.mock('../services/customerService', () => ({
+  customerService: { mine: vi.fn(), vehicles: vi.fn() },
+}))
+beforeEach(() => {
+  vi.clearAllMocks()
+  localStorage.clear()
+})
+function setup() {
+  render(
+    <MemoryRouter>
+      <AuthProvider>
+        <CustomerPortalPage />
+      </AuthProvider>
+    </MemoryRouter>,
+  )
+}
 it('displays saved contact details without requiring a second signup', async () => {
-  vi.mocked(customerService.mine).mockResolvedValue({ data: { customerId: 'CUS-1', name: 'customer1', phone: '5551234567', email: 'customer@example.test' } } as any)
+  vi.mocked(customerService.mine).mockResolvedValue({
+    data: {
+      customerId: 'CUS-1',
+      name: 'customer1',
+      phone: '5551234567',
+      email: 'customer@example.test',
+    },
+  } as any)
   vi.mocked(customerService.vehicles).mockResolvedValue({ data: [] } as any)
   setup()
   expect(await screen.findByText('customer@example.test')).toBeInTheDocument()
@@ -25,7 +45,14 @@ it('offers one-time setup for an old account with no profile without a load erro
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 it('does not mistake a failed vehicle request for a missing customer profile', async () => {
-  vi.mocked(customerService.mine).mockResolvedValue({ data: { customerId: 'CUS-1', name: 'customer1', phone: '5551234567', email: 'customer@example.test' } } as any)
+  vi.mocked(customerService.mine).mockResolvedValue({
+    data: {
+      customerId: 'CUS-1',
+      name: 'customer1',
+      phone: '5551234567',
+      email: 'customer@example.test',
+    },
+  } as any)
   vi.mocked(customerService.vehicles).mockRejectedValue({ response: { status: 404 } })
   setup()
   expect(await screen.findByRole('alert')).toHaveTextContent('vehicles could not be loaded')

@@ -1,2 +1,40 @@
-package com.autocare.controller;import com.autocare.dto.request.VehicleRequest;import com.autocare.dto.response.*;import com.autocare.service.*;import jakarta.validation.Valid;import org.springframework.web.bind.annotation.*;import java.util.*;
-@RestController @RequestMapping("/api/v1/vehicles") public class VehicleController {private final VehicleService vehicles;private final HistoryPdfService history;public VehicleController(VehicleService v,HistoryPdfService h){vehicles=v;history=h;}@GetMapping public List<VehicleResponse> search(@RequestParam(required=false)String search){return vehicles.search(search);}@GetMapping("/{id}") public VehicleResponse get(@PathVariable String id){return vehicles.get(id);}@PutMapping("/{id}") public VehicleResponse update(@PathVariable String id,@Valid @RequestBody VehicleRequest r){return vehicles.update(id,r);}@GetMapping("/{id}/service-history") public List<ServiceHistoryResponse> serviceHistory(@PathVariable String id){return history.history(id);}}
+package com.autocare.controller;
+
+import com.autocare.dto.request.VehicleRequest;
+import com.autocare.dto.response.*;
+import com.autocare.service.*;
+import jakarta.validation.Valid;
+import java.util.*;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/vehicles")
+public class VehicleController {
+    private final VehicleService vehicles;
+    private final HistoryPdfService history;
+
+    public VehicleController(VehicleService v, HistoryPdfService h) {
+        vehicles = v;
+        history = h;
+    }
+
+    @GetMapping
+    public List<VehicleResponse> search(@RequestParam(required = false) String search) {
+        return vehicles.search(search);
+    }
+
+    @GetMapping("/{id}")
+    public VehicleResponse get(@PathVariable String id) {
+        return vehicles.get(id);
+    }
+
+    @PutMapping("/{id}")
+    public VehicleResponse update(@PathVariable String id, @Valid @RequestBody VehicleRequest r) {
+        return vehicles.update(id, r);
+    }
+
+    @GetMapping("/{id}/service-history")
+    public List<ServiceHistoryResponse> serviceHistory(@PathVariable String id) {
+        return history.history(id);
+    }
+}

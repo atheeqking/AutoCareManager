@@ -17,12 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 public class DemoAccountsInitializer implements ApplicationRunner {
-    static final List<String> DEMO_USERNAMES = List.of("owner@autocare.com", "manager@autocare.com", "employee@autocare.com");
+    static final List<String> DEMO_USERNAMES =
+            List.of("owner@autocare.com", "manager@autocare.com", "employee@autocare.com");
     private static final Logger log = LoggerFactory.getLogger(DemoAccountsInitializer.class);
     private final UserRepository users;
     private final boolean demoAccountsEnabled;
 
-    public DemoAccountsInitializer(UserRepository users, @Value("${app.security.demo-accounts:false}") boolean demoAccountsEnabled) {
+    public DemoAccountsInitializer(
+            UserRepository users,
+            @Value("${app.security.demo-accounts:false}") boolean demoAccountsEnabled) {
         this.users = users;
         this.demoAccountsEnabled = demoAccountsEnabled;
     }
@@ -30,8 +33,13 @@ public class DemoAccountsInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        DEMO_USERNAMES.forEach(username -> users.findByUsername(username).ifPresent(user -> user.setEnabled(demoAccountsEnabled)));
-        if (demoAccountsEnabled) log.warn("Demo workshop accounts are ENABLED. Set DEMO_ACCOUNTS_ENABLED=false outside local development.");
+        DEMO_USERNAMES.forEach(
+                username ->
+                        users.findByUsername(username)
+                                .ifPresent(user -> user.setEnabled(demoAccountsEnabled)));
+        if (demoAccountsEnabled)
+            log.warn(
+                    "Demo workshop accounts are ENABLED. Set DEMO_ACCOUNTS_ENABLED=false outside local development.");
         else log.info("Demo workshop accounts are disabled.");
     }
 }

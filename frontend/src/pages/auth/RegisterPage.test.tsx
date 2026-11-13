@@ -6,8 +6,22 @@ import { authService } from '../../services/authService'
 import { RegisterPage } from './RegisterPage'
 
 vi.mock('../../services/authService', () => ({ authService: { register: vi.fn() } }))
-beforeEach(() => { localStorage.clear(); vi.clearAllMocks() })
-function setup() { render(<MemoryRouter initialEntries={['/register']}><AuthProvider><Routes><Route path="/register" element={<RegisterPage/>}/><Route path="/customer/dashboard" element={<h1>Customer dashboard</h1>}/></Routes></AuthProvider></MemoryRouter>) }
+beforeEach(() => {
+  localStorage.clear()
+  vi.clearAllMocks()
+})
+function setup() {
+  render(
+    <MemoryRouter initialEntries={['/register']}>
+      <AuthProvider>
+        <Routes>
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/customer/dashboard" element={<h1>Customer dashboard</h1>} />
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  )
+}
 describe('customer registration', () => {
   it('limits typed and pasted phone input to ten digits', () => {
     setup()
@@ -19,7 +33,19 @@ describe('customer registration', () => {
     expect(phone).toHaveAttribute('maxlength', '10')
   })
   it('creates the account with contact details and signs into the dashboard', async () => {
-    vi.mocked(authService.register).mockResolvedValue({ data: { accessToken: 'test-token', tokenType: 'Bearer', user: { id: 1, username: 'customer1', email: 'customer@example.test', role: 'CUSTOMER', authenticationType: 'LOCAL' } } } as any)
+    vi.mocked(authService.register).mockResolvedValue({
+      data: {
+        accessToken: 'test-token',
+        tokenType: 'Bearer',
+        user: {
+          id: 1,
+          username: 'customer1',
+          email: 'customer@example.test',
+          role: 'CUSTOMER',
+          authenticationType: 'LOCAL',
+        },
+      },
+    } as any)
     setup()
     fireEvent.change(screen.getByLabelText(/Username/), { target: { value: 'customer1' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'customer@example.test' } })
@@ -27,7 +53,12 @@ describe('customer registration', () => {
     fireEvent.change(screen.getByLabelText(/Password/), { target: { value: 'SafePassword123!' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }))
     await screen.findByRole('heading', { name: 'Customer dashboard' })
-    expect(authService.register).toHaveBeenCalledWith('customer1', 'customer@example.test', 'SafePassword123!', '5551234567')
+    expect(authService.register).toHaveBeenCalledWith(
+      'customer1',
+      'customer@example.test',
+      'SafePassword123!',
+      '5551234567',
+    )
     await waitFor(() => expect(localStorage.getItem('autocare.accessToken')).toBe('test-token'))
   })
 })

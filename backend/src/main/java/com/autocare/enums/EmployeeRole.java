@@ -1,3 +1,7 @@
 package com.autocare.enums;
 
-public enum EmployeeRole { EMPLOYEE, MANAGER, OWNER }
+public enum EmployeeRole {
+    EMPLOYEE,
+    MANAGER,
+    OWNER
+}

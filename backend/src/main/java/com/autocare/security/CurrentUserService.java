@@ -11,13 +11,33 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CurrentUserService {
-    private final CustomerRepository customers; private final EmployeeRepository employees;
-    public CurrentUserService(CustomerRepository customers, EmployeeRepository employees) { this.customers = customers; this.employees = employees; }
+    private final CustomerRepository customers;
+    private final EmployeeRepository employees;
+
+    public CurrentUserService(CustomerRepository customers, EmployeeRepository employees) {
+        this.customers = customers;
+        this.employees = employees;
+    }
+
     public CurrentUser requireCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof CurrentUser current)) throw new AccessDeniedException("Authentication is required");
+        if (auth == null || !(auth.getPrincipal() instanceof CurrentUser current))
+            throw new AccessDeniedException("Authentication is required");
         return current;
     }
-    public Customer requireCurrentCustomer() { CurrentUser current = requireCurrentUser(); if (current.id() == null) throw new AccessDeniedException("Guest users do not own customer records"); return customers.findByUserId(current.id()).orElseThrow(() -> new AccessDeniedException("Customer profile is required")); }
-    public Employee requireCurrentEmployee() { return employees.findByUserId(requireCurrentUser().id()).orElseThrow(() -> new AccessDeniedException("Employee profile is required")); }
+
+    public Customer requireCurrentCustomer() {
+        CurrentUser current = requireCurrentUser();
+        if (current.id() == null)
+            throw new AccessDeniedException("Guest users do not own customer records");
+        return customers
+                .findByUserId(current.id())
+                .orElseThrow(() -> new AccessDeniedException("Customer profile is required"));
+    }
+
+    public Employee requireCurrentEmployee() {
+        return employees
+                .findByUserId(requireCurrentUser().id())
+                .orElseThrow(() -> new AccessDeniedException("Employee profile is required"));
+    }
 }
