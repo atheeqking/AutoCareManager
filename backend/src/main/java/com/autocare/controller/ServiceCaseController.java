@@ -16,6 +16,8 @@ public class ServiceCaseController {
  @GetMapping("/{id}") public ServiceCaseDetailResponse get(@PathVariable String id){return workflow.get(id);}
  @PutMapping("/{id}/priority") public ServiceCaseDetailResponse priority(@PathVariable String id,@Valid @RequestBody PriorityRequest r){return workflow.priority(id,r);}
  @PutMapping("/{id}/assignment") public ServiceCaseDetailResponse assignment(@PathVariable String id,@Valid @RequestBody AssignmentRequest r){return workflow.assign(id,r);}
+ @PostMapping("/{id}/start-service") public ServiceCaseDetailResponse startService(@PathVariable String id){return workflow.startService(id);}
+ @PostMapping("/{id}/complete") public ServiceCaseDetailResponse complete(@PathVariable String id,@Valid @RequestBody CompletionRequest r){return workflow.complete(id,r);}
  @PostMapping("/{id}/start-diagnosis") public ServiceCaseDetailResponse startDiagnosis(@PathVariable String id){return workflow.startDiagnosis(id);}
  @PutMapping("/{id}/diagnosis") public ServiceCaseDetailResponse diagnosis(@PathVariable String id,@Valid @RequestBody TextRequest r){return workflow.saveDiagnosis(id,r);}
  @PostMapping("/{id}/submit-diagnosis") public ServiceCaseDetailResponse submitDiagnosis(@PathVariable String id){return workflow.submitDiagnosis(id);}
@@ -25,7 +27,7 @@ public class ServiceCaseController {
  @GetMapping("/{id}/items") public List<ServiceItemResponse> items(@PathVariable String id){return workflow.items(id);}
  @PostMapping("/{id}/items") public ResponseEntity<ServiceItemResponse> addItem(@PathVariable String id,@Valid @RequestBody ServiceItemRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(workflow.addItem(id,r));}
  @DeleteMapping("/{id}/items/{itemId}") public ResponseEntity<Void> deleteItem(@PathVariable String id,@PathVariable Long itemId){workflow.deleteItem(id,itemId);return ResponseEntity.noContent().build();}
- @PostMapping("/{id}/payment-pending") public ServiceCaseDetailResponse payment(@PathVariable String id){return workflow.payment(id);}
+ @PostMapping("/{id}/payment-pending") public ServiceCaseDetailResponse payment(@PathVariable String id,@Valid @RequestBody BillingRequest r){return workflow.payment(id,r);}
  @PostMapping("/{id}/hold") public ServiceCaseDetailResponse hold(@PathVariable String id){return workflow.hold(id);}
  @PostMapping("/{id}/cancel") public ServiceCaseDetailResponse cancel(@PathVariable String id){return workflow.cancel(id);}
  @PostMapping("/{id}/ready-for-pickup") @Transactional public ServiceCaseDetailResponse ready(@PathVariable String id){ServiceCaseDetailResponse result=workflow.ready(id);notifications.ready(id);return result;}

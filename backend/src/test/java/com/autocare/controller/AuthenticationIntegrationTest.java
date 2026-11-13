@@ -54,10 +54,31 @@ class AuthenticationIntegrationTest {
         mvc.perform(get("/api/v1/access/customer").header("Authorization", bearer(token))).andExpect(status().isForbidden());
         mvc.perform(get("/api/v1/access/workshop/employee").header("Authorization", bearer(token))).andExpect(status().isForbidden());
     }
-    @Test void customerCanRegisterAndReceiveCustomerJwt() throws Exception {
+    @Test @org.springframework.transaction.annotation.Transactional void customerCanRegisterWithProfileAndImmediatelyUseDashboard() throws Exception {
         String username = "new-customer-" + SEQUENCE.incrementAndGet();
-        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content("{\"username\":\"" + username + "\",\"email\":\"" + username + "@example.test\",\"password\":\"SafePassword123!\"}"))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.user.username").value(username)).andExpect(jsonPath("$.user.role").value("CUSTOMER"));
+        String payload = """
+                {"username":"%s","email":"%s@example.test","phone":"5551234567","password":"SafePassword123!"}
+                """.formatted(username, username);
+        String response = mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.user.username").value(username))
+                .andExpect(jsonPath("$.user.role").value("CUSTOMER")).andReturn().getResponse().getContentAsString();
+        String token = new com.fasterxml.jackson.databind.ObjectMapper().readTree(response).get("accessToken").asText();
+        mvc.perform(get("/api/v1/customers/me").header("Authorization", bearer(token)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.name").value(username))
+                .andExpect(jsonPath("$.phone").value("5551234567")).andExpect(jsonPath("$.email").value(username + "@example.test"));
+        mvc.perform(get("/api/v1/dashboard/customer").header("Authorization", bearer(token))).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(payload)).andExpect(status().isConflict());
+    }
+    @Test void registrationRejectsInvalidPhoneWithoutCreatingAnAccount() throws Exception {
+        for (String phone : java.util.List.of("55512345678", "555123456", "555abc4567", "")) {
+            String username = "invalid-phone-" + SEQUENCE.incrementAndGet();
+            String payload = """
+                    {"username":"%s","email":"%s@example.test","phone":"%s","password":"SafePassword123!"}
+                    """.formatted(username, username, phone);
+            mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(payload))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").exists());
+            assertThat(users.findByUsername(username)).isEmpty();
+        }
     }
     @Test void documentedDemoEmployeePasswordWorks() throws Exception {
         mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{\"username\":\"employee@autocare.com\",\"password\":\"password\"}"))

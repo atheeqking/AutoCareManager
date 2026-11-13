@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, ex) -> res.sendError(HttpServletResponse.SC_FORBIDDEN)))
                 .authorizeHttpRequests(a -> a.requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/guest", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/appointments/guest").hasRole("GUEST")
                         .requestMatchers("/api/v1/access/customer").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/access/workshop/employee").hasAnyRole("EMPLOYEE", "MANAGER", "OWNER")
                         .requestMatchers("/api/v1/access/workshop/manager").hasAnyRole("MANAGER", "OWNER")

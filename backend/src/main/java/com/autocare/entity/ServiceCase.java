@@ -23,6 +23,20 @@ public class ServiceCase extends AuditableEntity {
     @Column(name = "ready_for_pickup_at") private Instant readyForPickupAt;
     @Column(name = "delivered_at") private Instant deliveredAt;
     @Column(name = "completed_at") private Instant completedAt;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "started_by_user_id") private User startedBy;
+    @Column(name = "billing_total", precision = 16, scale = 2) private java.math.BigDecimal billingTotal;
+    @Column(name = "billing_currency", length = 3) private String billingCurrency;
+    @Column(name = "billed_at") private Instant billedAt;
+    @Column(name = "paid_at") private Instant paidAt;
+    public User getStartedBy() { return startedBy; }
+    public void startService(User user) { startedBy = user; status = ServiceCaseStatus.IN_SERVICE; }
+    public java.math.BigDecimal getBillingTotal() { return billingTotal; }
+    public String getBillingCurrency() { return billingCurrency; }
+    public Instant getBilledAt() { return billedAt; }
+    public Instant getPaidAt() { return paidAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public void bill(java.math.BigDecimal total, String currency) { billingTotal = total; billingCurrency = currency; billedAt = Instant.now(); status = ServiceCaseStatus.PAYMENT_PENDING; }
+    public void complete() { paidAt = Instant.now(); deliveredAt = paidAt; completedAt = paidAt; status = ServiceCaseStatus.COMPLETED; }
     protected ServiceCase() { }
     public ServiceCase(String id, Customer customer, Vehicle vehicle, Appointment appointment, VisitType visit, ServiceType type, Priority priority, Employee creator) { serviceCaseId=id;this.customer=customer;this.vehicle=vehicle;this.appointment=appointment;visitType=visit;serviceType=type;this.priority=priority;status=ServiceCaseStatus.CHECKED_IN;checkInTime=Instant.now();createdBy=creator; }
     public String getServiceCaseId(){return serviceCaseId;} public Customer getCustomer(){return customer;} public Vehicle getVehicle(){return vehicle;} public Appointment getAppointment(){return appointment;} public VisitType getVisitType(){return visitType;} public ServiceType getServiceType(){return serviceType;} public Priority getPriority(){return priority;} public ServiceCaseStatus getStatus(){return status;} public Instant getCheckInTime(){return checkInTime;} public String getDiagnosis(){return diagnosis;} public String getSolution(){return solution;} public String getTechnicianNotes(){return technicianNotes;} public Employee getAssignedEmployee(){return assignedEmployee;} public Instant getReadyForPickupAt(){return readyForPickupAt;} public void setStatus(ServiceCaseStatus s){status=s;} public void setPriority(Priority p){priority=p;} public void setAssignedEmployee(Employee e){assignedEmployee=e;} public void setDiagnosis(String v){diagnosis=v;} public void setSolution(String v){solution=v;} public void setTechnicianNotes(String v){technicianNotes=v;} public void ready(){status=ServiceCaseStatus.READY_FOR_PICKUP;readyForPickupAt=Instant.now();}

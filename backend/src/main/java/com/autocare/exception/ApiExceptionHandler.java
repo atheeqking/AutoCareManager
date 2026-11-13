@@ -9,6 +9,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    ResponseEntity<Map<String, String>> validation(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(java.util.stream.Collectors.joining(" "));
+        return ResponseEntity.badRequest().body(Map.of("message", message));
+    }
     @ExceptionHandler(AuthService.InvalidCredentialsException.class)
     ResponseEntity<Map<String, String>> invalidCredentials() { return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid username or password.")); }
     @ExceptionHandler(ResourceNotFoundException.class)

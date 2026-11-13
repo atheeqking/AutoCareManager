@@ -1,1 +1,1 @@
-package com.autocare.dto.response;public record WorkshopDashboardResponse(long todayAppointments,long todayWalkIns,long vehiclesInService,long waitingForApproval,long readyForPickup,long highPriorityCases,long completedCases){}
+package com.autocare.dto.response;public record WorkshopDashboardResponse(long todayAppointments,long todayWalkIns,long vehiclesInService,long waitingForApproval,long readyForPickup,long highPriorityCases,long completedCases,long waitingForService){}

@@ -161,3 +161,24 @@ Authentication integration tests additionally cover local login, BCrypt hashing,
 - APIs use the `/api/v1` prefix; the available endpoint is `GET /api/v1/health`.
 - PostgreSQL schema is reproducible from clean databases through Flyway; production-style configurations validate it through Hibernate.
 - JWT security, optional Google OAuth2, Swagger/OpenAPI, and auth routing are implemented in Phase 3. Business workflows remain deferred.
+
+### Employee service and billing workflow
+
+1. Open **Service cases** from the workshop dashboard, or use **View waiting for service**.
+2. A checked-in walk-in or appointment stays available until an employee clicks **Start service**. Starting records the employee's login and changes the case to **Vehicle in service**.
+3. Save the diagnosis/inspection findings and work performed. Add billing items (parts, labour, or other charges), quantities, and unit prices in **INR**. The total is calculated from the saved items.
+4. Choose **Review & finalize bill**, then **Confirm bill**. Finalization locks service details and billing items.
+5. Choose **Mark ready for pickup** to create the customer's in-app pickup notification.
+6. After receiving full payment and handing over the vehicle, check both confirmations and click **Complete service case**. The payment and collection timestamps are recorded.
+7. **Download PDF** includes the case details, itemized bill, total, payment status, and completion details. Long reports continue on additional pages.
+
+Restart the backend after this update so Flyway applies `V6__service_case_billing_and_completion.sql`. Existing unpriced service items must be replaced with priced items before finalizing a bill. Payment confirmation records a payment received outside the application; it does not charge the customer.
+
+### Public landing page and guest appointments
+
+- `/` is the public AutoCare Manager landing page, with the company overview, services, and appointment/account tiles.
+- The Appointment tile sends visitors to `/login?next=appointments`. Successful login continues to appointments; signed-in customers, guests, and workshop users go straight to their appropriate appointment page.
+- **Continue as Guest** opens `/guest/appointments`. A guest provides a 10-digit phone number, vehicle brand, model, license plate, date, time, and service selection. No name, email, or password is required. The vehicle is saved with the appointment.
+- A guest request creates a separate customer contact record without a login account. Phone numbers do not grant access to existing customer profiles or booking history.
+- Workshop staff see guest requests and their saved vehicles under Appointments and can confirm and check them in. Older phone-only bookings still require staff to add/select a vehicle. The normal service and billing workflow then applies.
+- Restart the backend to apply `V7__phone_only_guest_appointments.sql` before using guest booking.
