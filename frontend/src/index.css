@@ -63,7 +63,7 @@ main > nav a:hover { background: #eff6ff; }
 .landing-about h2, .landing-section-heading h2 { font-size: 2rem; line-height: 1.2; font-weight: 700; }
 .landing-about p:not(.landing-eyebrow) { color: #52657b; line-height: 1.8; }
 .landing-services { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; font-size: .85rem; font-weight: 600; }
-.landing-services li::before { content: '?'; color: #2563eb; margin-right: .5rem; }
+.landing-services li::before { content: '\2713'; color: #2563eb; margin-right: .5rem; }
 .landing-actions { max-width: 1160px; margin: auto; padding: 3.5rem 2rem 4rem; }
 .landing-section-heading p { color: #52657b; margin-top: .65rem; }
 .landing-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 1.75rem; }

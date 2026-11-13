@@ -38,7 +38,7 @@ Flyway V2 seeds these development-only accounts. The password is `password` and 
 - `manager@autocare.com` — MANAGER
 - `employee@autocare.com` — EMPLOYEE
 
-Change or remove these accounts for any non-demo deployment.
+These accounts are disabled at startup unless `DEMO_ACCOUNTS_ENABLED=true`. Change or remove them for any non-demo deployment.
 
 ## Environment
 
@@ -55,8 +55,12 @@ cd backend
 $env:DB_URL = "jdbc:postgresql://localhost:5433/autocare_manager"
 $env:DB_USERNAME = "autocare"
 $env:DB_PASSWORD = "password"
+$env:JWT_SECRET = "a-local-development-secret-of-at-least-32-characters"
+$env:DEMO_ACCOUNTS_ENABLED = "true"
 mvn spring-boot:run
 ```
+
+`JWT_SECRET` is required: the API refuses to start without a value of at least 32 characters. `DEMO_ACCOUNTS_ENABLED=true` enables the seeded demo workshop logins listed below; leave it unset (disabled) anywhere other than a local machine.
 ### How to test the tables created in the docker postgressql container
 1) In Docker Desktop, go to the Containers tab and click on your PostgreSQL container. Then select EXEc tab and click on open in terminal.
 2) Use the following command to connect to database "psql -U autocare -d autocare_manager"

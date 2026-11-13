@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: autocare_manager
     environment:
-      POSTGRES_DB: autocare_manager
-      POSTGRES_USER: autocare
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-autocare_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-autocare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:

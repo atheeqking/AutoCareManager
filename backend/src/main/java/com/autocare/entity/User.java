@@ -22,4 +22,5 @@ public class User extends AuditableEntity {
     public UserRole getRole() { return role; }
     public AuthenticationType getAuthenticationType() { return authenticationType; }
     public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }
