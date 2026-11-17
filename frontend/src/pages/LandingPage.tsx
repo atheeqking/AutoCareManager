@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { appointmentPath } from '../routes/appointmentPath'
-import { homePath } from './auth/LoginPage'
+import { appointmentPath, homePath } from '../routes/paths'
 
 export function LandingPage() {
   const { user } = useAuth()

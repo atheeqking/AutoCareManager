@@ -1,9 +1,8 @@
-import { appointmentPath } from '../../routes/appointmentPath'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
-import { homePath } from './LoginPage'
+import { appointmentPath, homePath } from '../../routes/paths'
 
 export function OAuthCallbackPage() {
   const { completeLogin } = useAuth()

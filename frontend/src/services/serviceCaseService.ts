@@ -2,6 +2,7 @@ import { apiClient } from './apiClient'
 export type Case = {
   serviceCaseId: string
   customerName: string
+  vehicleId?: string
   vehicle: string
   licensePlate: string
   priority: string
@@ -15,6 +16,8 @@ export type Case = {
   assignedEmployeeName?: string
   billingTotal?: number
   billingCurrency?: string
+  checkInTime?: string
+  readyForPickupAt?: string
   billedAt?: string
   paidAt?: string
   completedAt?: string

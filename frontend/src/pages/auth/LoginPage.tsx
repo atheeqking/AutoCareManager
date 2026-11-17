@@ -1,6 +1,6 @@
-import { appointmentPath } from '../../routes/appointmentPath'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { appointmentPath, homePath } from '../../routes/paths'
 import { authService } from '../../services/authService'
 import { useAuth } from '../../context/AuthContext'
 import type { LoginResponse } from '../../types/auth'
@@ -10,15 +10,21 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const { completeLogin } = useAuth()
+  const { completeLogin, sessionNotice } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const booking = searchParams.get('next') === 'appointments'
+  const returnTo = (location.state as { from?: string } | null)?.from
   const finish = (response: LoginResponse) => {
     completeLogin(response)
-    navigate(booking ? appointmentPath(response.user.role) : homePath(response.user.role), {
-      replace: true,
-    })
+    const role = response.user.role
+    const destination = booking
+      ? appointmentPath(role)
+      : returnTo && role !== 'GUEST'
+        ? returnTo
+        : homePath(role)
+    navigate(destination, { replace: true })
   }
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -53,6 +59,11 @@ export function LoginPage() {
           Vehicle service management
         </p>
         <h1 className="mt-2 text-3xl font-bold">AutoCare Manager</h1>
+        {sessionNotice && (
+          <p role="status" className="mt-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+            {sessionNotice}
+          </p>
+        )}
         <h2 className="mt-8 text-xl font-semibold">Account Login</h2>
         <form className="mt-4 space-y-4" onSubmit={submit}>
           <label className="block text-sm">
@@ -127,11 +138,4 @@ export function LoginPage() {
       </section>
     </main>
   )
-}
-export function homePath(role: string) {
-  if (role === 'CUSTOMER') return '/customer/dashboard'
-  if (role === 'GUEST') return '/guest/appointments'
-  if (role === 'OWNER') return '/workshop/owner'
-  if (role === 'MANAGER') return '/workshop/manager'
-  return '/workshop/employee'
 }

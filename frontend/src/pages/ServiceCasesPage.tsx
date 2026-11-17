@@ -1,28 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { caseService, type Case, type ServiceItem } from '../services/serviceCaseService'
+import { apiErrorMessage } from '../utils/apiError'
+import { formatMoney } from '../utils/format'
+import { SERVICE_CASE_STATUS_LABELS } from '../utils/serviceCaseStatus'
 
-const labels: Record<string, string> = {
-  CHECKED_IN: 'Checked in · waiting for service',
-  DIAGNOSIS: 'Diagnosis',
-  WAITING_FOR_APPROVAL: 'Waiting for approval',
-  IN_SERVICE: 'Vehicle in service',
-  PAYMENT_PENDING: 'Billed · payment pending',
-  READY_FOR_PICKUP: 'Ready for pickup',
-  COMPLETED: 'Completed',
-  CANCELLED: 'Cancelled',
-  ON_HOLD: 'On hold',
-  DELIVERED: 'Delivered',
-}
-const money = (value: number, currency = 'INR') =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(value)
+const labels = SERVICE_CASE_STATUS_LABELS
+const money = formatMoney
 const emptyItem = { name: '', description: '', quantity: '1', unitPrice: '' }
-function message(e: unknown) {
-  return (
-    (e as { response?: { data?: { message?: string } } }).response?.data?.message ??
-    'Unable to save this change. Please try again.'
-  )
-}
+const message = (e: unknown) =>
+  apiErrorMessage(e, 'Unable to save this change. Please try again.')
 
 export function ServiceCasesPage() {
   const { serviceCaseId } = useParams()

@@ -1,25 +1,38 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { isWorkshopRole, serviceCasePath } from '../routes/paths'
 import { customerService } from '../services/customerService'
 import type { ServiceHistory, Vehicle } from '../types/domain'
+import { serviceCaseStatusLabel } from '../utils/serviceCaseStatus'
+
+const SERVICE_TYPE_LABELS: Record<string, string> = {
+  GENERAL_MAINTENANCE: 'General maintenance',
+  SPECIFIC_ISSUE: 'Specific issue',
+  BOTH: 'Maintenance & specific issue',
+}
+
 export function VehicleDetailPage() {
   const { vehicleId } = useParams()
   const navigate = useNavigate()
-  const [v, setV] = useState<Vehicle | null>(null),
-    [h, setH] = useState<ServiceHistory[]>([]),
-    [error, setError] = useState(''),
-    [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const workshop = isWorkshopRole(user?.role)
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+  const [history, setHistory] = useState<ServiceHistory[]>([])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
   const load = async () => {
     if (!vehicleId) return
     setLoading(true)
     setError('')
     try {
-      const [vehicle, history] = await Promise.all([
+      const [vehicleResult, historyResult] = await Promise.all([
         customerService.vehicle(vehicleId),
         customerService.history(vehicleId),
       ])
-      setV(vehicle.data)
-      setH(history.data)
+      setVehicle(vehicleResult.data)
+      setHistory(historyResult.data)
     } catch {
       setError('Unable to load vehicle details. Please try again.')
     } finally {
@@ -28,53 +41,97 @@ export function VehicleDetailPage() {
   }
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleId])
-  const back = () => (window.history.length > 1 ? navigate(-1) : navigate('/workshop/customers'))
+
+  const fallback = workshop ? '/workshop/customers' : '/customer'
+  const back = () => (window.history.length > 1 ? navigate(-1) : navigate(fallback))
+
   if (loading)
-    return <main className="min-h-screen bg-slate-50 p-8 text-slate-900">Loading vehicle...</main>
+    return (
+      <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+        <p role="status">Loading vehicle…</p>
+      </main>
+    )
   if (error)
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-rose-700">
-        {error}
-        <button onClick={() => void load()} className="ml-3 rounded border p-2">
+      <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+        <p role="alert" className="text-rose-700">
+          {error}
+        </p>
+        <button onClick={() => void load()} className="mt-3 rounded border px-3 py-2">
           Retry
         </button>
       </main>
     )
   return (
-    <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900">
       <section className="mx-auto max-w-3xl rounded-xl bg-white p-7">
-        <button onClick={back} className="text-blue-700">
+        <button onClick={back} className="text-sm font-semibold text-blue-700">
           ← Back
         </button>
-        <p className="mt-5 text-sm text-blue-700">{v?.vehicleId}</p>
+        <p className="mt-5 text-sm text-blue-700">{vehicle?.vehicleId}</p>
         <h1 className="text-3xl font-bold">
-          {v?.make} {v?.model}
+          {vehicle?.make} {vehicle?.model}
         </h1>
-        <p>
-          {v?.licensePlate} · {v?.color}
-        </p>
-        <h2 className="mt-8 text-2xl font-bold">Service History</h2>
-        {h.length === 0 ? (
+        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-slate-500">License plate</dt>
+            <dd className="font-medium">{vehicle?.licensePlate}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Colour</dt>
+            <dd className="font-medium">{vehicle?.color}</dd>
+          </div>
+          {vehicle?.year != null && (
+            <div>
+              <dt className="text-slate-500">Year</dt>
+              <dd className="font-medium">{vehicle.year}</dd>
+            </div>
+          )}
+          {vehicle?.currentMileage != null && (
+            <div>
+              <dt className="text-slate-500">Mileage</dt>
+              <dd className="font-medium">{vehicle.currentMileage.toLocaleString('en-IN')} km</dd>
+            </div>
+          )}
+          {vehicle?.vin && (
+            <div className="sm:col-span-2">
+              <dt className="text-slate-500">VIN</dt>
+              <dd className="break-all font-medium">{vehicle.vin}</dd>
+            </div>
+          )}
+        </dl>
+        <h2 className="mt-8 text-2xl font-bold">Service history</h2>
+        {history.length === 0 ? (
           <p className="mt-3 text-slate-600">
             No service history yet. Service records will appear here after this vehicle receives
             service.
           </p>
         ) : (
           <div className="mt-4 space-y-3">
-            {h.map((x) => (
+            {history.map((entry) => (
               <Link
-                key={x.serviceCaseId}
-                to={`/workshop/service-cases/${x.serviceCaseId}`}
-                className="block rounded bg-slate-50 p-4 transition hover:bg-slate-100"
+                key={entry.serviceCaseId}
+                to={serviceCasePath(entry.serviceCaseId, user?.role)}
+                className="block rounded-lg border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100"
               >
-                <b>{x.serviceCaseId}</b>
-                <p>
-                  {x.status} · {x.serviceType}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <b>{entry.serviceCaseId}</b>
+                  <span className="text-sm text-slate-600">
+                    {serviceCaseStatusLabel(entry.status)} ·{' '}
+                    {SERVICE_TYPE_LABELS[entry.serviceType] ?? entry.serviceType}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm">
+                  <span className="text-slate-500">Issue:</span> {entry.issue ?? 'Not recorded'}
                 </p>
-                <p>Issue: {x.issue ?? 'N/A'}</p>
-                <p>Work: {x.solution ?? 'N/A'}</p>
-                <span className="mt-2 block text-sm text-blue-700">Open service case →</span>
+                <p className="text-sm">
+                  <span className="text-slate-500">Work:</span> {entry.solution ?? 'Not recorded'}
+                </p>
+                <span className="mt-2 block text-sm font-semibold text-blue-700">
+                  Open service record →
+                </span>
               </Link>
             ))}
           </div>
