@@ -3,6 +3,7 @@ package com.autocare.config;
 import com.autocare.repository.UserRepository;
 import com.autocare.security.GoogleAuthenticationSuccessHandler;
 import com.autocare.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,7 +100,12 @@ public class SecurityConfig {
                                                                 HttpServletResponse.SC_FORBIDDEN)))
                 .authorizeHttpRequests(
                         a ->
-                                a.requestMatchers(
+                                // Error dispatches (sendError(403), uncaught 500s) must keep their
+                                // status. The JWT filter does not run on them, so without this
+                                // rule /error re-challenges and every error becomes a 401.
+                                a.dispatcherTypeMatchers(DispatcherType.ERROR)
+                                        .permitAll()
+                                        .requestMatchers(
                                                 "/api/v1/health",
                                                 "/api/v1/auth/login",
                                                 "/api/v1/auth/register",

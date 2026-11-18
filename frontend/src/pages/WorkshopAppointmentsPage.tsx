@@ -1,9 +1,33 @@
 import { GuestVehicleDetails } from '../components/GuestVehicleDetails'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { appointmentService, type Appointment } from '../services/appointmentService'
 import { customerService } from '../services/customerService'
 import type { Customer, Vehicle } from '../types/domain'
+import { PageLayout } from '../components/PageLayout'
+import { apiErrorMessage } from '../utils/apiError'
+import { formatDate, formatTime, todayIsoDate } from '../utils/format'
+import {
+  APPOINTMENT_STATUS_LABELS,
+  isOverdue,
+  OPEN_APPOINTMENT_STATUSES,
+  SERVICE_TYPE_LABELS,
+} from '../utils/appointmentStatus'
+
+const VIEWS: Record<string, string> = {
+  NEEDS_ACTION: 'Needs action',
+  TODAY: 'Today',
+  ALL: 'All appointments',
+  ...APPOINTMENT_STATUS_LABELS,
+}
+function matchesView(a: Appointment, view: string) {
+  if (view === 'ALL') return true
+  if (view === 'NEEDS_ACTION') return OPEN_APPOINTMENT_STATUSES.includes(a.status)
+  if (view === 'TODAY') return a.requestedDate === todayIsoDate()
+  return a.status === view
+}
+const byVisitTime = (a: Appointment, b: Appointment) =>
+  `${a.requestedDate}T${a.requestedTime}`.localeCompare(`${b.requestedDate}T${b.requestedTime}`)
 
 const emptyForm = {
   customerId: '',
@@ -13,19 +37,17 @@ const emptyForm = {
   issueDescription: '',
   additionalNotes: '',
 }
-const serviceLabels: Record<string, string> = {
-  GENERAL_MAINTENANCE: 'General maintenance',
-  SPECIFIC_ISSUE: 'Specific issue',
-  BOTH: 'Maintenance & specific issue',
-}
-function errorMessage(error: unknown) {
-  return (
-    (error as { response?: { data?: { message?: string } } }).response?.data?.message ??
-    'Unable to complete this request. Please try again.'
-  )
-}
+const serviceLabels = SERVICE_TYPE_LABELS
+const errorMessage = (error: unknown) =>
+  apiErrorMessage(error, 'Unable to complete this request. Please try again.')
 
 export function WorkshopAppointmentsPage() {
+  // The view lives in the URL so dashboard links and the top menu always show the right list.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedView = searchParams.get('view') ?? ''
+  const view = requestedView in VIEWS ? requestedView : 'NEEDS_ACTION'
+  const setView = (next: string) =>
+    setSearchParams(next === 'NEEDS_ACTION' ? {} : { view: next }, { replace: true })
   const [items, setItems] = useState<Appointment[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -141,21 +163,23 @@ export function WorkshopAppointmentsPage() {
       setBusy(false)
     }
   }
+  const visible = items.filter((a) => matchesView(a, view)).sort(byVisitTime)
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
-      <div className="mx-auto max-w-5xl">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-blue-700">WORKSHOP</p>
-            <h1 className="text-3xl font-bold">Appointments & walk-ins</h1>
-            <p className="mt-2 text-slate-600">
-              Manage scheduled visits or check in a customer arriving today.
-            </p>
-          </div>
-          <Link className="text-blue-700 underline" to="/workshop/customers">
-            Create customer or vehicle
-          </Link>
-        </header>
+    <PageLayout
+      width="wide"
+      eyebrow="Workshop"
+      title="Appointments & walk-ins"
+      description="Manage scheduled visits or check in a customer arriving today."
+      actions={
+        <Link
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold"
+          to="/workshop/customers"
+        >
+          Create customer or vehicle
+        </Link>
+      }
+    >
+      <div>
         {message && (
           <p role="status" className="mt-4 rounded bg-emerald-50 p-4 text-emerald-800">
             {message}{' '}
@@ -308,19 +332,56 @@ export function WorkshopAppointmentsPage() {
             </button>
           </section>
         )}
-        <section className="mt-8 space-y-3">
-          <h2 className="text-xl font-semibold">Scheduled appointments</h2>
-          {items.length === 0 && <p className="text-slate-600">No scheduled appointments.</p>}
-          {items.map((x) => (
+        <section className="mt-10 space-y-3" aria-labelledby="scheduled-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="scheduled-heading" className="text-xl font-semibold">
+              Scheduled appointments
+            </h2>
+            <label className="flex items-center gap-3 text-sm font-semibold">
+              Show
+              <select value={view} onChange={(e) => setView(e.target.value)}>
+                {Object.entries(VIEWS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {visible.length === 0 && (
+            <p className="rounded-xl bg-white p-5 text-slate-600">No appointments in this view.</p>
+          )}
+          {visible.map((x) => (
             <article key={x.appointmentId} className="rounded-xl bg-white p-5">
-              <b>{x.appointmentId}</b>
-              <p>
-                {x.customerName} / {x.phone} / {x.vehicle}
-                {x.licensePlate ? ` / ${x.licensePlate}` : ''}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong>{x.appointmentId}</strong>
+                  {isOverdue(x) && (
+                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+                      Overdue
+                    </span>
+                  )}
+                </div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-slate-700">
+                  {APPOINTMENT_STATUS_LABELS[x.status] ?? x.status}
+                </span>
+              </div>
+              <p className="mt-2 font-semibold">
+                {formatDate(x.requestedDate)} at {formatTime(x.requestedTime)}
               </p>
-              <p>
-                {x.requestedDate} {x.requestedTime} · {serviceLabels[x.serviceType]} · {x.status}
+              <p className="text-slate-700">
+                {x.customerName} · {x.phone}
               </p>
+              <p className="text-sm text-slate-600">
+                {x.vehicle}
+                {x.licensePlate ? ` · ${x.licensePlate}` : ''} ·{' '}
+                {serviceLabels[x.serviceType] ?? x.serviceType}
+              </p>
+              {x.issueDescription && (
+                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
+                  Issue: {x.issueDescription}
+                </p>
+              )}
               {!x.vehicleId && (x.status === 'REQUESTED' || x.status === 'CONFIRMED') && (
                 <GuestVehicleDetails appointment={x} onSaved={load} />
               )}
@@ -365,6 +426,6 @@ export function WorkshopAppointmentsPage() {
           ))}
         </section>
       </div>
-    </main>
+    </PageLayout>
   )
 }

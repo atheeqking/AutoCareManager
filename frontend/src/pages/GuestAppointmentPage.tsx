@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { PhoneInput } from '../components/PhoneInput'
+import { PageLayout } from '../components/PageLayout'
 import { appointmentService, type Appointment } from '../services/appointmentService'
 
 const services: Record<string, string> = {
@@ -81,16 +82,12 @@ export function GuestAppointmentPage() {
   const today = new Date()
   const minDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
-      <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
-          Guest appointment
-        </p>
-        <h1 className="mt-2 text-3xl font-bold">Book a visit. Skip the signup.</h1>
-        <p className="mt-3 text-slate-600">
-          Enter your phone number, basic vehicle details, and preferred visit time. No account
-          needed.
-        </p>
+    <PageLayout
+      eyebrow="Guest appointment"
+      title="Book a visit. Skip the signup."
+      description="Enter your phone number, basic vehicle details, and preferred visit time. No account needed."
+    >
+      <div>
         {error && (
           <p role="alert" className="mt-5 rounded-lg bg-rose-50 p-4 text-rose-700">
             {error}
@@ -227,6 +224,6 @@ export function GuestAppointmentPage() {
           </>
         )}
       </div>
-    </main>
+    </PageLayout>
   )
 }

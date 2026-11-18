@@ -14,8 +14,11 @@ describe('LoginPage', () => {
         </AuthProvider>
       </BrowserRouter>,
     )
-    expect(screen.getByRole('heading', { name: 'Account Login' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Account login' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Continue as Guest' })).toBeInTheDocument()
+    // Google sign-in is hidden unless it is configured, rather than shown disabled.
+    expect(screen.queryByRole('button', { name: 'Continue with Google' })).not.toBeInTheDocument()
   })
   it('validates a missing username before calling the API', () => {
     render(

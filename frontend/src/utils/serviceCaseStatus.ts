@@ -35,3 +35,33 @@ export function serviceCaseStatusLabel(status: string) {
 export function isClosedStatus(status: string) {
   return CLOSED_STATUSES.includes(status)
 }
+
+type FilterableCase = {
+  status: string
+  priority: string
+  visitType?: string
+  checkInTime?: string
+}
+
+/**
+ * Service case list filters. A status value matches that status; the named filters match the
+ * workshop dashboard tiles, so a tile's count and the list it opens agree.
+ */
+export function matchesFilter(c: FilterableCase, filter: string, now = new Date()) {
+  switch (filter) {
+    case 'ALL':
+      return true
+    case 'ACTIVE':
+      return !isClosedStatus(c.status)
+    case 'HIGH_PRIORITY':
+      return ['HIGH', 'CRITICAL'].includes(c.priority) && !isClosedStatus(c.status)
+    case 'TODAY_WALK_INS':
+      return (
+        c.visitType === 'WALK_IN' &&
+        !!c.checkInTime &&
+        new Date(c.checkInTime).toDateString() === now.toDateString()
+      )
+    default:
+      return c.status === filter
+  }
+}

@@ -87,13 +87,14 @@ public class AuthService {
                         entityManager
                                 .createNativeQuery("select nextval('customer_business_id_seq')")
                                 .getSingleResult();
+        String name =
+                request.name() == null || request.name().isBlank()
+                        ? request.username()
+                        : request.name().trim();
         Customer customer =
-                new Customer(
-                        "CUS-%06d".formatted(next.longValue()),
-                        request.username(),
-                        request.phone());
+                new Customer("CUS-%06d".formatted(next.longValue()), name, request.phone());
         customer.assignUser(user);
-        customer.update(request.username(), request.phone(), request.email());
+        customer.update(name, request.phone(), request.email());
         customers.save(customer);
         return responseFor(user);
     }

@@ -6,7 +6,7 @@ import { CustomerPortalPage } from './CustomerPortalPage'
 import { customerService } from '../services/customerService'
 
 vi.mock('../services/customerService', () => ({
-  customerService: { mine: vi.fn(), vehicles: vi.fn() },
+  customerService: { mine: vi.fn(), vehicles: vi.fn(), createVehicle: vi.fn() },
 }))
 beforeEach(() => {
   vi.clearAllMocks()
@@ -57,4 +57,39 @@ it('does not mistake a failed vehicle request for a missing customer profile', a
   setup()
   expect(await screen.findByRole('alert')).toHaveTextContent('vehicles could not be loaded')
   expect(screen.queryByRole('heading', { name: 'Complete your profile' })).not.toBeInTheDocument()
+})
+it('lets a customer add their own vehicle', async () => {
+  vi.mocked(customerService.mine).mockResolvedValue({
+    data: { customerId: 'CUS-1', name: 'Priya', phone: '5551234567', email: null },
+  } as any)
+  vi.mocked(customerService.vehicles)
+    .mockResolvedValueOnce({ data: [] } as any)
+    .mockResolvedValueOnce({
+      data: [
+        {
+          vehicleId: 'VEH-1',
+          make: 'Hyundai',
+          model: 'i20',
+          licensePlate: 'KA01AB1234',
+          color: 'White',
+        },
+      ],
+    } as any)
+  vi.mocked(customerService.createVehicle).mockResolvedValue({ data: {} } as any)
+  setup()
+  fireEvent.click(await screen.findByRole('button', { name: 'Add vehicle' }))
+  fireEvent.change(screen.getByLabelText('Make'), { target: { value: 'Hyundai' } })
+  fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'i20' } })
+  fireEvent.change(screen.getByLabelText('Colour'), { target: { value: 'White' } })
+  fireEvent.change(screen.getByLabelText('License plate'), { target: { value: 'ka01ab1234' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save vehicle' }))
+  expect(await screen.findByText(/has been added/)).toBeInTheDocument()
+  expect(customerService.createVehicle).toHaveBeenCalledWith('CUS-1', {
+    make: 'Hyundai',
+    model: 'i20',
+    color: 'White',
+    licensePlate: 'KA01AB1234',
+    year: undefined,
+  })
+  expect(screen.getByText('KA01AB1234 · White')).toBeInTheDocument()
 })

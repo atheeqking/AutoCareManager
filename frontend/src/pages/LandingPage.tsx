@@ -6,7 +6,7 @@ export function LandingPage() {
   const { user } = useAuth()
   const accountPath = user && user.role !== 'GUEST' ? homePath(user.role) : '/login'
   return (
-    <main className="landing-page">
+    <main id="main" className="landing-page">
       <section className="landing-hero" aria-labelledby="landing-title">
         <div>
           <p className="landing-eyebrow">A little care. A better drive.</p>

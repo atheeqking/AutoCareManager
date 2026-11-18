@@ -5,6 +5,8 @@ import { isWorkshopRole, serviceCasePath } from '../routes/paths'
 import { customerService } from '../services/customerService'
 import type { ServiceHistory, Vehicle } from '../types/domain'
 import { serviceCaseStatusLabel } from '../utils/serviceCaseStatus'
+import { PageLayout } from '../components/PageLayout'
+import { apiErrorStatus } from '../utils/apiError'
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   GENERAL_MAINTENANCE: 'General maintenance',
@@ -33,15 +35,19 @@ export function VehicleDetailPage() {
       ])
       setVehicle(vehicleResult.data)
       setHistory(historyResult.data)
-    } catch {
-      setError('Unable to load vehicle details. Please try again.')
+    } catch (e) {
+      const status = apiErrorStatus(e)
+      setError(
+        status === 403 || status === 404
+          ? 'This vehicle is not available to your account.'
+          : 'Unable to load vehicle details. Please try again.',
+      )
     } finally {
       setLoading(false)
     }
   }
   useEffect(() => {
     void load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleId])
 
   const fallback = workshop ? '/workshop/customers' : '/customer'
@@ -49,23 +55,23 @@ export function VehicleDetailPage() {
 
   if (loading)
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+      <PageLayout>
         <p role="status">Loading vehicle…</p>
-      </main>
+      </PageLayout>
     )
   if (error)
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
+      <PageLayout>
         <p role="alert" className="text-rose-700">
           {error}
         </p>
         <button onClick={() => void load()} className="mt-3 rounded border px-3 py-2">
           Retry
         </button>
-      </main>
+      </PageLayout>
     )
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900">
+    <PageLayout>
       <section className="mx-auto max-w-3xl rounded-xl bg-white p-7">
         <button onClick={back} className="text-sm font-semibold text-blue-700">
           ← Back
@@ -137,6 +143,6 @@ export function VehicleDetailPage() {
           </div>
         )}
       </section>
-    </main>
+    </PageLayout>
   )
 }

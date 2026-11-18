@@ -59,10 +59,16 @@ public class DashboardService {
                         .filter(c -> c.getStatus() == ServiceCaseStatus.READY_FOR_PICKUP)
                         .count(),
                 all.stream()
+                        // Open cases only: a closed high-priority case needs no attention.
                         .filter(
                                 c ->
-                                        c.getPriority() == Priority.HIGH
-                                                || c.getPriority() == Priority.CRITICAL)
+                                        (c.getPriority() == Priority.HIGH
+                                                        || c.getPriority() == Priority.CRITICAL)
+                                                && !Set.of(
+                                                                ServiceCaseStatus.COMPLETED,
+                                                                ServiceCaseStatus.CANCELLED,
+                                                                ServiceCaseStatus.DELIVERED)
+                                                        .contains(c.getStatus()))
                         .count(),
                 all.stream().filter(c -> c.getStatus() == ServiceCaseStatus.COMPLETED).count(),
                 all.stream().filter(c -> c.getStatus() == ServiceCaseStatus.CHECKED_IN).count());

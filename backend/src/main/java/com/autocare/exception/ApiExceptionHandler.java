@@ -25,6 +25,18 @@ public class ApiExceptionHandler {
                 .body(Map.of("message", "Invalid username or password."));
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    ResponseEntity<Map<String, String>> forbidden(
+            org.springframework.security.access.AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage() == null
+                                        ? "You do not have access to this resource."
+                                        : ex.getMessage()));
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     ResponseEntity<Map<String, String>> notFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));

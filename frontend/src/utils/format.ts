@@ -10,9 +10,11 @@ export function formatDate(isoDate: string | null | undefined) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
   if (!match) return isoDate
   const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-  return new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', year: 'numeric' }).format(
-    date,
-  )
+  return new Intl.DateTimeFormat(LOCALE, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
 }
 
 /** `14:30:00` → `2:30 pm`. */

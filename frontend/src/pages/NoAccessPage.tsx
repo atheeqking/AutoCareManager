@@ -6,7 +6,7 @@ export function NoAccessPage() {
   const { user, logout } = useAuth()
   const guest = user?.role === 'GUEST'
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-900">
+    <main id="main" className="min-h-screen bg-slate-50 px-5 py-12 text-slate-900">
       <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-7 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[.16em] text-blue-700">
           Access restricted

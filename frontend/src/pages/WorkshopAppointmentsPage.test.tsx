@@ -69,3 +69,51 @@ describe('workshop walk-in', () => {
     expect(screen.queryByRole('button', { name: 'Confirm & Create' })).not.toBeInTheDocument()
   })
 })
+describe('scheduled appointments list', () => {
+  const appt = (id: string, status: string, date: string, time = '10:00:00') => ({
+    appointmentId: id,
+    customerName: 'Jane',
+    phone: '5551234567',
+    vehicleId: 'VEH-1',
+    vehicle: 'Toyota Camry',
+    requestedDate: date,
+    requestedTime: time,
+    serviceType: 'GENERAL_MAINTENANCE',
+    status,
+  })
+  it('shows open appointments by default, sorted, readable, and flags overdue ones', async () => {
+    vi.mocked(appointmentService.list).mockResolvedValue({
+      data: [
+        appt('APT-3', 'REQUESTED', '2099-01-02'),
+        appt('APT-1', 'CONFIRMED', '2020-05-01', '09:30:00'),
+        appt('APT-2', 'CANCELLED', '2099-01-01'),
+      ],
+    } as any)
+    render(
+      <MemoryRouter>
+        <WorkshopAppointmentsPage />
+      </MemoryRouter>,
+    )
+    const articles = await screen.findAllByRole('article')
+    expect(articles.map((a) => a.querySelector('strong')?.textContent)).toEqual(['APT-1', 'APT-3'])
+    expect(articles[0]).toHaveTextContent('Overdue')
+    expect(articles[0]).toHaveTextContent('1 May 2020 at 9:30 am')
+    expect(articles[1]).toHaveTextContent('Requested')
+    expect(articles[1]).not.toHaveTextContent('Overdue')
+    fireEvent.change(screen.getByLabelText('Show'), { target: { value: 'ALL' } })
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+  })
+})
+it('follows the URL view, so the top menu resets a dashboard filter', async () => {
+  const { Link } = await import('react-router-dom')
+  vi.mocked(appointmentService.list).mockResolvedValue({ data: [] } as any)
+  render(
+    <MemoryRouter initialEntries={['/workshop/appointments?view=TODAY']}>
+      <Link to="/workshop/appointments">Appointments menu</Link>
+      <WorkshopAppointmentsPage />
+    </MemoryRouter>,
+  )
+  expect(await screen.findByLabelText('Show')).toHaveValue('TODAY')
+  fireEvent.click(screen.getByRole('link', { name: 'Appointments menu' }))
+  expect(await screen.findByLabelText('Show')).toHaveValue('NEEDS_ACTION')
+})

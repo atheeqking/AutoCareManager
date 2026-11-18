@@ -4,6 +4,7 @@ import { BillingTable } from '../components/BillingTable'
 import { caseService, type Case, type ServiceItem } from '../services/serviceCaseService'
 import { apiErrorMessage, apiErrorStatus } from '../utils/apiError'
 import { formatDateTime, formatMoney } from '../utils/format'
+import { PageLayout } from '../components/PageLayout'
 import { CUSTOMER_STATUS_EXPLANATIONS, serviceCaseStatusLabel } from '../utils/serviceCaseStatus'
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -71,7 +72,7 @@ export function CustomerServiceCasePage() {
   const backPath = serviceCase?.vehicleId ? `/vehicles/${serviceCase.vehicleId}` : '/customer'
 
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900">
+    <PageLayout>
       <div className="mx-auto max-w-3xl">
         <Link to={backPath} className="text-sm font-semibold text-blue-700">
           ← Back to vehicle
@@ -94,8 +95,10 @@ export function CustomerServiceCasePage() {
                 <h1 className="text-2xl font-bold">{serviceCase.vehicle}</h1>
                 <p className="text-sm text-slate-500">
                   {serviceCase.licensePlate}
-                  {serviceCase.serviceType && ` · ${SERVICE_TYPE_LABELS[serviceCase.serviceType] ?? serviceCase.serviceType}`}
-                  {serviceCase.visitType && ` · ${serviceCase.visitType === 'WALK_IN' ? 'Walk-in' : 'Appointment'}`}
+                  {serviceCase.serviceType &&
+                    ` · ${SERVICE_TYPE_LABELS[serviceCase.serviceType] ?? serviceCase.serviceType}`}
+                  {serviceCase.visitType &&
+                    ` · ${serviceCase.visitType === 'WALK_IN' ? 'Walk-in' : 'Appointment'}`}
                 </p>
               </div>
               <button
@@ -178,6 +181,6 @@ export function CustomerServiceCasePage() {
           </article>
         )}
       </div>
-    </main>
+    </PageLayout>
   )
 }

@@ -1,23 +1,101 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { PageLayout } from '../components/PageLayout'
 import {
   dashboardService,
   type CustomerDashboard,
   type WorkshopDashboard,
 } from '../services/dashboardService'
 
-const caseFilters: Record<string, string> = {
-  vehiclesInService: 'IN_SERVICE',
-  waitingForApproval: 'WAITING_FOR_APPROVAL',
-  readyForPickup: 'READY_FOR_PICKUP',
-  completedCases: 'COMPLETED',
-  waitingForService: 'CHECKED_IN',
-  todayWalkIns: 'ALL',
-}
+type Tile<T> = { key: keyof T; label: string; hint: string; to: string; action: string }
+
+/** Ordered as the vehicle moves through the workshop. */
+const WORKSHOP_TILES: Tile<WorkshopDashboard>[] = [
+  {
+    key: 'todayAppointments',
+    label: "Today's appointments",
+    hint: 'Visits booked for today',
+    to: '/workshop/appointments?view=TODAY',
+    action: 'View appointments',
+  },
+  {
+    key: 'todayWalkIns',
+    label: "Today's walk-ins",
+    hint: 'Vehicles checked in without a booking',
+    to: '/workshop/service-cases?status=TODAY_WALK_INS',
+    action: 'View walk-ins',
+  },
+  {
+    key: 'waitingForService',
+    label: 'Waiting for service',
+    hint: 'Checked in, not yet started',
+    to: '/workshop/service-cases?status=CHECKED_IN',
+    action: 'Start service',
+  },
+  {
+    key: 'vehiclesInService',
+    label: 'In service',
+    hint: 'Work in progress',
+    to: '/workshop/service-cases?status=IN_SERVICE',
+    action: 'View vehicles in service',
+  },
+  {
+    key: 'waitingForApproval',
+    label: 'Waiting for approval',
+    hint: 'Diagnosis submitted for approval',
+    to: '/workshop/service-cases?status=WAITING_FOR_APPROVAL',
+    action: 'Review approvals',
+  },
+  {
+    key: 'readyForPickup',
+    label: 'Ready for pickup',
+    hint: 'Awaiting payment and handover',
+    to: '/workshop/service-cases?status=READY_FOR_PICKUP',
+    action: 'View pickups',
+  },
+  {
+    key: 'highPriorityCases',
+    label: 'High priority',
+    hint: 'Open cases marked high or critical',
+    to: '/workshop/service-cases?status=HIGH_PRIORITY',
+    action: 'View priority cases',
+  },
+  {
+    key: 'completedCases',
+    label: 'Completed',
+    hint: 'Paid and collected',
+    to: '/workshop/service-cases?status=COMPLETED',
+    action: 'View completed',
+  },
+]
+
+const CUSTOMER_TILES: Tile<CustomerDashboard>[] = [
+  {
+    key: 'vehicles',
+    label: 'My vehicles',
+    hint: 'Vehicles on your profile',
+    to: '/customer',
+    action: 'Manage vehicles',
+  },
+  {
+    key: 'activeServices',
+    label: 'Active services',
+    hint: 'Vehicles currently with the workshop',
+    to: '/customer',
+    action: 'View service history',
+  },
+  {
+    key: 'unreadNotifications',
+    label: 'Unread notifications',
+    hint: 'Updates about your vehicles',
+    to: '/customer/notifications',
+    action: 'Open notifications',
+  },
+]
 
 export function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const workshop = user?.role !== 'CUSTOMER'
   const [data, setData] = useState<WorkshopDashboard | CustomerDashboard | null>(null)
   const [error, setError] = useState('')
@@ -28,66 +106,65 @@ export function DashboardPage() {
       .catch(() => setError('Unable to load dashboard.'))
   }
   useEffect(load, [workshop])
-  const values = data ? Object.entries(data) : []
+  const tiles = (workshop ? WORKSHOP_TILES : CUSTOMER_TILES) as Tile<Record<string, number>>[]
+  const values = data as Record<string, number> | null
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
-      <header className="mx-auto flex max-w-5xl items-center justify-between">
-        <div>
-          <p className="text-sm text-blue-700">AutoCare Manager</p>
-          <h1 className="text-3xl font-bold">{workshop ? 'Workshop Dashboard' : 'My Dashboard'}</h1>
-        </div>
-        <button className="rounded bg-slate-100 px-3 py-2" onClick={logout}>
-          Logout
-        </button>
-      </header>
-      <nav className="mx-auto mt-5 flex max-w-5xl flex-wrap gap-3 text-blue-700">
-        {workshop ? (
-          <>
-            <Link to="/workshop/customers">Customers</Link>
-            <Link to="/workshop/appointments">Appointments</Link>
-            <Link to="/workshop/service-cases">Service cases</Link>
-          </>
+    <PageLayout
+      width="wide"
+      eyebrow={workshop ? 'Workshop' : 'My AutoCare'}
+      title={workshop ? 'Workshop dashboard' : 'My dashboard'}
+      description={
+        workshop
+          ? 'Today at a glance. Select a tile to open the matching list.'
+          : 'Your vehicles, services and updates in one place.'
+      }
+      actions={
+        workshop ? (
+          <Link
+            to="/workshop/appointments"
+            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white"
+          >
+            New walk-in
+          </Link>
         ) : (
-          <>
-            <Link to="/customer">Profile & vehicles</Link>
-            <Link to="/customer/appointments">Appointments</Link>
-            <Link to="/customer/notifications">Notifications</Link>
-          </>
-        )}
-      </nav>
+          <Link
+            to="/customer/appointments"
+            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white"
+          >
+            Book an appointment
+          </Link>
+        )
+      }
+    >
       {error ? (
-        <section className="mx-auto mt-6 max-w-5xl rounded bg-rose-50 p-5">
+        <section role="alert" className="rounded-xl bg-rose-50 p-5 text-rose-700">
           <p>{error}</p>
-          <button className="mt-3 rounded border px-3 py-2" onClick={load}>
+          <button className="mt-3 rounded border border-rose-300 px-3 py-2" onClick={load}>
             Retry
           </button>
         </section>
-      ) : !data ? (
-        <p className="mx-auto mt-8 max-w-5xl">Loading dashboard…</p>
+      ) : !values ? (
+        <p role="status">Loading dashboard…</p>
       ) : (
-        <section className="mx-auto mt-6 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {values.map(([label, value]) => (
-            <article key={label} className="rounded-xl bg-white p-5">
-              <p className="text-sm capitalize text-slate-500">
-                {label.replace(/([A-Z])/g, ' $1')}
-              </p>
-              <p className="mt-2 text-3xl font-bold">{value}</p>
-              {workshop && (
-                <Link
-                  className="mt-3 inline-block text-sm font-semibold text-blue-700 underline"
-                  to={
-                    label === 'todayAppointments'
-                      ? '/workshop/appointments'
-                      : '/workshop/service-cases?status=' + (caseFilters[label] ?? 'ACTIVE')
-                  }
-                >
-                  View {label.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                </Link>
-              )}
-            </article>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {tiles.map((tile) => (
+            <li key={String(tile.key)}>
+              <Link
+                to={tile.to}
+                className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 hover:border-blue-300 hover:shadow-sm"
+              >
+                <span className="text-sm font-semibold text-slate-600">{tile.label}</span>
+                <span className="mt-2 text-3xl font-bold">{values[tile.key as string] ?? 0}</span>
+                <span className="mt-1 text-sm text-slate-500">{tile.hint}</span>
+                <span className="mt-4 text-sm font-semibold text-blue-700">
+                  {tile.action} <span aria-hidden="true">→</span>
+                </span>
+              </Link>
+            </li>
           ))}
-        </section>
+        </ul>
       )}
-    </main>
+    </PageLayout>
   )
 }

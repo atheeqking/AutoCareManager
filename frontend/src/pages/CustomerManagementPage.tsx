@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { customerService } from '../services/customerService'
 import type { Customer, Vehicle } from '../types/domain'
-import { useAuth } from '../context/AuthContext'
+import { PageLayout } from '../components/PageLayout'
 
 const emptyCustomer = { name: '', phone: '', email: '' }
 const emptyVehicle = {
@@ -31,7 +31,6 @@ export function CustomerManagementPage() {
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(false)
   const [addingVehicle, setAddingVehicle] = useState(false)
-  const { logout } = useAuth()
   const load = async (query = '') => {
     try {
       setCustomers((await customerService.list(query)).data)
@@ -88,17 +87,13 @@ export function CustomerManagementPage() {
     }
   }
   return (
-    <main className="min-h-screen bg-slate-50 p-5 text-slate-900">
-      <header className="mx-auto mb-6 flex max-w-6xl items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold text-blue-700">WORKSHOP</p>
-          <h1 className="text-3xl font-bold">Customers & Vehicles</h1>
-        </div>
-        <button onClick={logout} className="rounded bg-slate-100 px-3 py-2">
-          Logout
-        </button>
-      </header>
-      <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[.9fr_1.4fr]">
+    <PageLayout
+      width="wide"
+      eyebrow="Workshop"
+      title="Customers & Vehicles"
+      description="Find a customer, update their details, or add a vehicle."
+    >
+      <div className="grid gap-5 lg:grid-cols-[.9fr_1.4fr]">
         <section className="rounded-xl bg-white p-5">
           <form
             onSubmit={(e) => {
@@ -264,7 +259,7 @@ export function CustomerManagementPage() {
           )}
         </section>
       </div>
-    </main>
+    </PageLayout>
   )
 }
 function Input({

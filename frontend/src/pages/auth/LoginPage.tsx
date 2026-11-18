@@ -53,19 +53,22 @@ export function LoginPage() {
   }
   const googleEnabled = import.meta.env.VITE_GOOGLE_LOGIN_ENABLED === 'true'
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-12 text-slate-900">
+    <main id="main" className="min-h-screen bg-slate-50 px-5 py-12 text-slate-900">
       <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-7 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[.16em] text-blue-700">
-          Vehicle service management
+          {booking ? 'Book an appointment' : 'Welcome back'}
         </p>
-        <h1 className="mt-2 text-3xl font-bold">AutoCare Manager</h1>
+        <h1 className="mt-2 text-3xl font-bold">Log in</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          For customers and workshop staff.
+          {booking && ' Log in to book with your saved vehicles, or continue as a guest below.'}
+        </p>
         {sessionNotice && (
           <p role="status" className="mt-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
             {sessionNotice}
           </p>
         )}
-        <h2 className="mt-8 text-xl font-semibold">Account Login</h2>
-        <form className="mt-4 space-y-4" onSubmit={submit}>
+        <form className="mt-6 space-y-4" onSubmit={submit} aria-label="Account login">
           <label className="block text-sm">
             Username
             <input
@@ -106,33 +109,34 @@ export function LoginPage() {
             Create an account
           </Link>
         </p>
-        <div className="my-7 border-t border-slate-200" />
-        <h2 className="text-xl font-semibold">Customer</h2>
-        <button
-          className="mt-4 w-full rounded-md border border-slate-300 px-4 py-3 font-medium disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!googleEnabled || submitting}
-          onClick={() => {
-            sessionStorage.setItem('autocare.afterLogin', booking ? 'appointments' : '')
-            window.location.assign(
-              `${import.meta.env.VITE_BACKEND_ORIGIN ?? 'http://localhost:8080'}/oauth2/authorization/google`,
-            )
-          }}
-        >
-          Continue with Google
-        </button>
-        {!googleEnabled && (
-          <p className="mt-2 text-xs text-slate-500">
-            Google login needs the backend Google profile and OAuth credentials.
-          </p>
+        <div className="my-7 flex items-center gap-3 text-sm text-slate-500" aria-hidden="true">
+          <span className="h-px flex-1 bg-slate-200" />
+          or
+          <span className="h-px flex-1 bg-slate-200" />
+        </div>
+        <h2 className="sr-only">Other ways to continue</h2>
+        {googleEnabled && (
+          <button
+            className="mb-3 w-full rounded-md border border-slate-300 px-4 py-3 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={submitting}
+            onClick={() => {
+              sessionStorage.setItem('autocare.afterLogin', booking ? 'appointments' : '')
+              window.location.assign(
+                `${import.meta.env.VITE_BACKEND_ORIGIN ?? 'http://localhost:8080'}/oauth2/authorization/google`,
+              )
+            }}
+          >
+            Continue with Google
+          </button>
         )}
         <button
-          className="mt-3 w-full rounded-md bg-slate-100 px-4 py-3 font-medium disabled:opacity-50"
+          className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 font-medium hover:bg-slate-50 disabled:opacity-50"
           disabled={submitting}
           onClick={guest}
         >
           Continue as Guest
         </button>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-center text-xs text-slate-500">
           Book with your phone number. No account needed.
         </p>
       </section>

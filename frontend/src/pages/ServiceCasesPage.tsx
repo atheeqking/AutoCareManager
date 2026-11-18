@@ -2,19 +2,22 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { caseService, type Case, type ServiceItem } from '../services/serviceCaseService'
 import { apiErrorMessage } from '../utils/apiError'
-import { formatMoney } from '../utils/format'
-import { SERVICE_CASE_STATUS_LABELS } from '../utils/serviceCaseStatus'
+import { formatDateTime, formatMoney } from '../utils/format'
+import { matchesFilter, SERVICE_CASE_STATUS_LABELS } from '../utils/serviceCaseStatus'
+import { PageLayout } from '../components/PageLayout'
 
 const labels = SERVICE_CASE_STATUS_LABELS
 const money = formatMoney
 const emptyItem = { name: '', description: '', quantity: '1', unitPrice: '' }
-const message = (e: unknown) =>
-  apiErrorMessage(e, 'Unable to save this change. Please try again.')
+const message = (e: unknown) => apiErrorMessage(e, 'Unable to save this change. Please try again.')
 
 export function ServiceCasesPage() {
   const { serviceCaseId } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  // The filter lives in the URL so dashboard tiles and the top menu always show the right list.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filter = searchParams.get('status') ?? 'ACTIVE'
+  const setFilter = (next: string) => setSearchParams({ status: next }, { replace: true })
   const [cases, setCases] = useState<Case[]>([])
   const [selected, setSelected] = useState<Case | null>(null)
   const [items, setItems] = useState<ServiceItem[]>([])
@@ -22,7 +25,6 @@ export function ServiceCasesPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
-  const [filter, setFilter] = useState(searchParams.get('status') ?? 'ACTIVE')
   const [diagnosis, setDiagnosis] = useState('')
   const [solution, setSolution] = useState('')
   const [item, setItem] = useState(emptyItem)
@@ -175,27 +177,24 @@ export function ServiceCasesPage() {
     items.length > 0 &&
     items.every((row) => row.unitPrice != null) &&
     !dirty
-  const visible = cases.filter(
-    (c) =>
-      filter === 'ALL' ||
-      (filter === 'ACTIVE'
-        ? !['COMPLETED', 'CANCELLED', 'DELIVERED'].includes(c.status)
-        : c.status === filter),
-  )
+  const visible = cases.filter((c) => matchesFilter(c, filter))
   const buttonClass = 'rounded-lg bg-blue-700 px-4 py-3 text-white disabled:opacity-50'
   return (
-    <main className="min-h-screen bg-slate-50 p-5 text-slate-900">
-      <div className="mx-auto max-w-6xl">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-blue-700">WORKSHOP</p>
-            <h1 className="text-3xl font-bold">Service cases & billing</h1>
-            <p className="mt-2 text-slate-600">From arrival to service, pickup, and payment.</p>
-          </div>
-          <Link to="/workshop/appointments" className="text-blue-700 underline">
-            Appointments & walk-ins
-          </Link>
-        </header>
+    <PageLayout
+      width="wide"
+      eyebrow="Workshop"
+      title="Service cases & billing"
+      description="From arrival to service, pickup, and payment."
+      actions={
+        <Link
+          to="/workshop/appointments"
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold"
+        >
+          New walk-in
+        </Link>
+      }
+    >
+      <div>
         {error && (
           <div role="alert" className="mt-5 rounded-lg bg-rose-50 p-4 text-rose-700">
             <p>{error}</p>
@@ -215,6 +214,8 @@ export function ServiceCasesPage() {
               Show
               <select value={filter} onChange={(e) => setFilter(e.target.value)}>
                 <option value="ACTIVE">Active cases</option>
+                <option value="HIGH_PRIORITY">High priority (open)</option>
+                <option value="TODAY_WALK_INS">Today&apos;s walk-ins</option>
                 <option value="CHECKED_IN">Waiting for service</option>
                 <option value="IN_SERVICE">Vehicle in service</option>
                 <option value="WAITING_FOR_APPROVAL">Waiting for approval</option>
@@ -589,9 +590,7 @@ export function ServiceCasesPage() {
               {selected.status === 'COMPLETED' && (
                 <div className="rounded-xl bg-emerald-50 p-5 text-emerald-800">
                   <h3 className="font-semibold">Paid in full · vehicle collected</h3>
-                  <p className="mt-1">
-                    {selected.completedAt ? new Date(selected.completedAt).toLocaleString() : ''}
-                  </p>
+                  <p className="mt-1">{formatDateTime(selected.completedAt)}</p>
                   <p className="mt-2 text-sm">
                     Download the PDF for the completed service report and bill.
                   </p>
@@ -607,6 +606,6 @@ export function ServiceCasesPage() {
           )}
         </div>
       </div>
-    </main>
+    </PageLayout>
   )
 }

@@ -5,6 +5,7 @@ import { authService } from '../../services/authService'
 import { PhoneInput } from '../../components/PhoneInput'
 
 export function RegisterPage() {
+  const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -19,6 +20,10 @@ export function RegisterPage() {
     event.preventDefault()
     setError('')
     if (submitting) return
+    if (!name.trim()) {
+      setError('Enter your full name.')
+      return
+    }
     if (!/^[A-Za-z0-9._-]{3,100}$/.test(username.trim())) {
       setError(
         'Username must be 3–100 characters: letters, numbers, dots, underscores, or hyphens.',
@@ -31,7 +36,13 @@ export function RegisterPage() {
     }
     setSubmitting(true)
     try {
-      const { data } = await authService.register(username.trim(), email.trim(), password, phone)
+      const { data } = await authService.register(
+        username.trim(),
+        email.trim(),
+        password,
+        phone,
+        name.trim(),
+      )
       completeLogin(data)
       navigate(booking ? '/customer/appointments' : '/customer/dashboard', { replace: true })
     } catch (requestError) {
@@ -45,7 +56,7 @@ export function RegisterPage() {
   }
   const inputClass = 'mt-1 w-full rounded-md border border-slate-300 bg-white p-3'
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
+    <main id="main" className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
       <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-7 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[.16em] text-blue-700">
           Customer account
@@ -55,6 +66,17 @@ export function RegisterPage() {
           Your profile, appointments, and vehicle care in one place.
         </p>
         <form className="mt-6 space-y-4" onSubmit={submit}>
+          <label className="block text-sm">
+            Full name
+            <input
+              className={inputClass}
+              required
+              maxLength={150}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+            />
+          </label>
           <label className="block text-sm">
             Username
             <input

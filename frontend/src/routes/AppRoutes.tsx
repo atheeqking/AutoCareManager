@@ -34,7 +34,10 @@ export function AppRoutes() {
         <Route path="/customer/dashboard" element={<DashboardPage />} />
         <Route path="/customer/notifications" element={<NotificationsPage />} />
         <Route path="/customer/appointments" element={<AppointmentPage />} />
-        <Route path="/customer/service-cases/:serviceCaseId" element={<CustomerServiceCasePage />} />
+        <Route
+          path="/customer/service-cases/:serviceCaseId"
+          element={<CustomerServiceCasePage />}
+        />
         <Route path="/customer/*" element={<Navigate to="/customer" replace />} />
       </Route>
 

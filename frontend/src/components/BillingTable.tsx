@@ -43,10 +43,14 @@ export function BillingTable({
               </td>
               <td className="p-2">{row.quantity}</td>
               <td className="whitespace-nowrap p-2 text-right">
-                {row.unitPrice == null ? 'Not priced' : formatMoney(Number(row.unitPrice), currency)}
+                {row.unitPrice == null
+                  ? 'Not priced'
+                  : formatMoney(Number(row.unitPrice), currency)}
               </td>
               <td className="whitespace-nowrap p-2 text-right">
-                {row.lineTotal == null ? 'Not priced' : formatMoney(Number(row.lineTotal), currency)}
+                {row.lineTotal == null
+                  ? 'Not priced'
+                  : formatMoney(Number(row.lineTotal), currency)}
               </td>
               {onRemove && (
                 <td>

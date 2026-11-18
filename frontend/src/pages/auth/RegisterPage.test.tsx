@@ -47,6 +47,7 @@ describe('customer registration', () => {
       },
     } as any)
     setup()
+    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: ' Priya Raman ' } })
     fireEvent.change(screen.getByLabelText(/Username/), { target: { value: 'customer1' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'customer@example.test' } })
     fireEvent.change(screen.getByLabelText(/Phone number/), { target: { value: '5551234567' } })
@@ -58,6 +59,7 @@ describe('customer registration', () => {
       'customer@example.test',
       'SafePassword123!',
       '5551234567',
+      'Priya Raman',
     )
     await waitFor(() => expect(localStorage.getItem('autocare.accessToken')).toBe('test-token'))
   })

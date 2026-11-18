@@ -16,7 +16,9 @@ public record RegistrationRequest(
                         regexp = "[0-9]{10}",
                         message = "Phone number must contain exactly 10 digits.")
                 String phone,
-        @NotBlank @Size(min = 8, max = 100) String password) {
+        @NotBlank @Size(min = 8, max = 100) String password,
+        // Optional for API compatibility; the customer's display name falls back to the username.
+        @Size(max = 150, message = "Name must be at most 150 characters.") String name) {
     @Override
     public String toString() {
         return "RegistrationRequest[username="
